@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Haru.dev",
-  description: "Minimal blog by Haru",
+  description: "Modern blog by Haru",
 };
 
 export default function RootLayout({
@@ -20,14 +21,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={inter.variable} suppressHydrationWarning>
-      <body className="font-sans antialiased bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+      <body className="font-sans antialiased bg-white">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="min-h-screen">{children}</main>
+          <main className="max-w-[1392px] md:max-w-[940px] sm:max-w-[620px] lg:max-w-[1392px] m-auto min-h-screen">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>

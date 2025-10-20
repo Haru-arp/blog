@@ -65,3 +65,33 @@ export const getPageBySlugValue = async (slug: string) => {
     return null;
   }
 };
+export const getCategories = async () => {
+  if (!process.env.NOTION_DATABASE_ID) {
+    throw new Error("NOTION_DATABASE_ID is not defined");
+  }
+
+  try {
+    const response = await notion.dataSources.query({
+      data_source_id: process.env.NOTION_DATABASE_ID,
+      filter: {
+        property: "상태",
+        status: {
+          equals: "공개",
+        },
+      },
+    });
+
+    const categories = new Set<string>();
+    response.results.forEach((post: any) => {
+      const category = post.properties.카테고리?.select?.name;
+      if (category) {
+        categories.add(category);
+      }
+    });
+
+    return Array.from(categories).sort();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+};

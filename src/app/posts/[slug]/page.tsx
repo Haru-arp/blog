@@ -6,13 +6,11 @@ import {
 } from "../../../lib/notion";
 import type { Metadata } from "next";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  oneLight,
-  oneDark,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Link from "next/link";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -20,14 +18,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { CodeBlock } from "@/components/code-block";
+import { BackNavigation } from "@/components/back-navigation";
+import { NotionHeader } from "@/components/notion-header";
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const posts: any[] = await getPosts();
-
   return posts.map((post) => ({
     slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id,
   }));
@@ -37,47 +34,32 @@ export async function generateMetadata(props: {
   params: { slug: string };
 }): Promise<Metadata> {
   const { slug } = await props.params;
-
-  // Try to find by slug first, then fall back to ID
   let page: any = await getPageBySlugValue(slug);
   if (!page) {
     page = await getPageBySlug(slug);
   }
-
   const title = page?.properties?.이름?.title[0]?.plain_text || "Post";
-
   return {
     title: `${title} | Haru.dev`,
     description: `"${title}" on Haru.dev Blog`,
   };
 }
 
-// Define the shape of the page component's props
 type PageProps = {
   params: {
     slug: string;
   };
 };
 
-// Helper function for rendering rich text arrays
 const renderRichText = (richText: any[]) => {
   if (!richText) return null;
   return richText.map((text, index) => {
     const { annotations, plain_text, href } = text;
     let element: React.ReactNode = plain_text;
-
-    if (annotations.bold) {
-      element = <strong>{element}</strong>;
-    }
-    if (annotations.italic) {
-      element = <em>{element}</em>;
-    }
-    if (annotations.strikethrough) {
-      element = <del>{element}</del>;
-    }
-    if (annotations.underline) {
-      element = <u>{element}</u>;
-    }
+    if (annotations.bold) element = <strong>{element}</strong>;
+    if (annotations.italic) element = <em>{element}</em>;
+    if (annotations.strikethrough) element = <del>{element}</del>;
+    if (annotations.underline) element = <u>{element}</u>;
     if (annotations.code) {
       element = (
         <code className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded text-sm font-mono">
@@ -97,12 +79,10 @@ const renderRichText = (richText: any[]) => {
         </a>
       );
     }
-
     return <span key={index}>{element}</span>;
   });
 };
 
-// Helper function to group consecutive list items
 const groupBlocks = (blocks: any[]) => {
   const grouped: any[] = [];
   let currentGroup: any[] = [];
@@ -120,7 +100,6 @@ const groupBlocks = (blocks: any[]) => {
       currentGroup.push(block);
       currentGroupType = block.type;
     } else {
-      // End current group if it exists
       if (currentGroup.length > 0) {
         grouped.push({
           type: "list_group",
@@ -130,7 +109,6 @@ const groupBlocks = (blocks: any[]) => {
         });
         currentGroup = [];
       }
-
       if (isListItem) {
         currentGroup.push(block);
         currentGroupType = block.type;
@@ -140,8 +118,6 @@ const groupBlocks = (blocks: any[]) => {
       }
     }
   }
-
-  // Don't forget the last group
   if (currentGroup.length > 0) {
     grouped.push({
       type: "list_group",
@@ -150,11 +126,9 @@ const groupBlocks = (blocks: any[]) => {
       id: `group-${currentGroup[0].id}`,
     });
   }
-
   return grouped;
 };
 
-// Enhanced renderer for Notion blocks with shadcn components
 const renderBlock = (block: any) => {
   switch (block.type) {
     case "heading_1":
@@ -222,55 +196,25 @@ const renderBlock = (block: any) => {
           </div>
         </Alert>
       );
-    case "toggle":
-      return (
-        <Collapsible className="mb-6">
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full justify-start p-0 h-auto font-normal"
-            >
-              <span className="mr-2">▶</span>
-              {renderRichText(block.toggle.rich_text)}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 pl-6 text-muted-foreground">
-            <p className="text-sm">
-              Toggle content (requires additional API call)
-            </p>
-          </CollapsibleContent>
-        </Collapsible>
-      );
     case "divider":
       return <Separator className="my-8" />;
     case "code":
       return (
-        <CodeBlock language={block.code.language || "text"}>
-          {block.code.rich_text[0]?.plain_text || ""}
-        </CodeBlock>
-      );
-    case "image":
-      const src =
-        block.image.type === "external"
-          ? block.image.external.url
-          : block.image.file.url;
-      const caption =
-        block.image.caption.length > 0 ? block.image.caption[0].plain_text : "";
-      return (
-        <figure className="mb-8">
-          <div className="rounded-lg overflow-hidden border">
-            <img
-              src={src}
-              alt={caption || "Blog post image"}
-              className="w-full h-auto"
-            />
-          </div>
-          {caption && (
-            <figcaption className="text-center text-sm text-muted-foreground mt-3">
-              {caption}
-            </figcaption>
-          )}
-        </figure>
+        <div className="mb-6 rounded-lg overflow-hidden border">
+          <SyntaxHighlighter
+            language={block.code.language || "text"}
+            style={oneLight}
+            customStyle={{
+              margin: 0,
+              padding: "1rem",
+              fontSize: "0.875rem",
+              lineHeight: "1.5",
+              background: "transparent",
+            }}
+          >
+            {block.code.rich_text[0]?.plain_text || ""}
+          </SyntaxHighlighter>
+        </div>
       );
     default:
       return (
@@ -293,15 +237,12 @@ function formatDate(dateString: string) {
 
 export default async function PostPage(props: PageProps) {
   const { slug } = await props.params;
-
   let page: any = await getPageBySlugValue(slug);
   let pageId = page?.id;
-
   if (!page) {
     page = await getPageBySlug(slug);
     pageId = slug;
   }
-
   if (!page) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -323,56 +264,62 @@ export default async function PostPage(props: PageProps) {
   const content: any[] = await getPageContent(pageId);
   const title = page.properties.이름?.title[0]?.plain_text || "제목 없음";
   const date = page.properties.날짜?.date?.start || "";
+  const category = page.properties.카테고리?.select?.name || "";
   const groupedContent = groupBlocks(content);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 bg-background/80 backdrop-blur-sm border-b z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Haru.dev
-            </Button>
-          </Link>
-          <ThemeToggle />
-        </div>
-      </nav>
-
-      {/* Article */}
-      <article className="max-w-2xl mx-auto px-4 py-12">
-        {/* Header */}
-        <header className="mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-6 leading-tight">
-            {title}
-          </h1>
-          {date && (
-            <div className="flex items-center text-muted-foreground mb-8">
-              <Calendar className="mr-2 h-4 w-4" />
-              <time dateTime={date}>{formatDate(date)}</time>
+    <div className="min-h-screen bg-white">
+      <main className="max-w-7xl mx-auto px-8 py-12">
+        <div className="xl:grid xl:grid-cols-[120px_auto] xl:gap-8">
+          <div className="hidden xl:block">
+            <BackNavigation category={category} />
+          </div>
+          <div className="max-w-4xl">
+            {/* Mobile Back Button */}
+            <div className="xl:hidden mb-6">
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  className="p-0 h-auto font-normal text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                >
+                  <ArrowLeft className="mr-1 h-4 w-4" />
+                  모든 게시글
+                </Button>
+              </Link>
             </div>
-          )}
-          <Separator />
-        </header>
 
-        {/* Content */}
-        <section className="prose-custom">
-          {groupedContent.map((block) => (
-            <div key={block.id}>{renderBlock(block)}</div>
-          ))}
-        </section>
-
-        {/* Footer */}
-        <footer className="mt-16 pt-8 border-t">
-          <Link href="/">
-            <Button variant="outline" className="w-full">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              다른 글 보기
-            </Button>
-          </Link>
-        </footer>
-      </article>
+            <header className="mb-12">
+              {category && (
+                <div className="mb-4">
+                  <Link href={`/category/${encodeURIComponent(category)}`}>
+                    <Badge
+                      variant="outline"
+                      className="hover:bg-gray-100 cursor-pointer"
+                    >
+                      {category}
+                    </Badge>
+                  </Link>
+                </div>
+              )}
+              <h1 className="text-4xl font-bold tracking-tight mb-6 leading-tight text-gray-900">
+                {title}
+              </h1>
+              {date && (
+                <div className="flex items-center text-gray-500 mb-8">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <time dateTime={date}>{formatDate(date)}</time>
+                </div>
+              )}
+              <div className="border-b border-gray-200"></div>
+            </header>
+            <article className="prose prose-lg max-w-none">
+              {groupedContent.map((block) => (
+                <div key={block.id}>{renderBlock(block)}</div>
+              ))}
+            </article>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

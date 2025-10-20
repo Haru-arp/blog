@@ -1,16 +1,11 @@
-import { getPosts, getCategories } from "../../src/lib/notion";
+import { getPosts, getCategories } from "../../../lib/notion";
 import type { Metadata } from "next";
+import { Badge } from "@/components/ui/badge";
 import { NotionHeader } from "@/components/notion-header";
 import { CategoryNavigation } from "@/components/category-navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "Tools & Craft | Haru.dev",
-  description: "Modern blog by Haru",
-};
 
 export const revalidate = 60;
 
@@ -21,6 +16,29 @@ type Post = {
   };
 };
 
+export async function generateStaticParams() {
+  const posts: Post[] = (await getPosts()) as Post[];
+  const categories = new Set<string>();
+  posts.forEach((post) => {
+    const category = post.properties.카테고리?.select?.name;
+    if (category) categories.add(category);
+  });
+  return Array.from(categories).map((category) => ({
+    category: encodeURIComponent(category),
+  }));
+}
+
+export async function generateMetadata(props: {
+  params: { category: string };
+}): Promise<Metadata> {
+  const { category } = await props.params;
+  const decodedCategory = decodeURIComponent(category);
+  return {
+    title: `${decodedCategory} | Haru.dev`,
+    description: `${decodedCategory} 카테고리의 글들`,
+  };
+}
+
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("ko-KR", {
     year: "numeric",
@@ -29,64 +47,73 @@ function formatDate(dateString: string) {
   });
 }
 
-export default async function Home() {
-  const posts: Post[] = (await getPosts()) as Post[];
+export default async function CategoryPage(props: {
+  params: { category: string };
+}) {
+  const { category } = await props.params;
+  const decodedCategory = decodeURIComponent(category);
+  const allPosts: Post[] = (await getPosts()) as Post[];
   const categories: string[] = await getCategories();
+
+  const posts = allPosts.filter((post) => {
+    const postCategory = post.properties.카테고리?.select?.name;
+    return postCategory === decodedCategory;
+  });
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-8 py-12">
         <div className="xl:grid xl:grid-cols-[300px_auto] xl:gap-12">
-          {/* Left Side - Category Navigation */}
           <div className="hidden xl:block">
             <CategoryNavigation categories={categories} />
           </div>
-
-          {/* Right Side - Posts Grid */}
           <div>
-            {/* Mobile Title */}
             <div className="xl:hidden mb-8">
-              <h1 className="text-5xl font-bold mb-4 leading-tight">
-                Haru's
-                <br />
-                <span className="italic font-light">Dev</span>
-              </h1>
-              <p className="text-gray-600 text-base leading-relaxed mb-6">
-                업무 방식의 미래를 이끄는 사람들과
-                <br />
-                팀이 전하는 생각
-              </p>
+              <div className="flex items-center gap-3 mb-4">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {decodedCategory}
+                </h1>
+                <Badge variant="outline">{posts.length}개의 글</Badge>
+              </div>
 
               {/* Mobile Category Navigation */}
               <div className="flex flex-wrap gap-2 mb-6">
                 <Link
                   href="/"
-                  className="px-3 py-1.5 text-sm rounded-full bg-black text-white"
+                  className="px-3 py-1.5 text-sm rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
                 >
                   최근
                 </Link>
-                {categories.map((category) => (
+                {categories.map((cat) => (
                   <Link
-                    key={category}
-                    href={`/category/${encodeURIComponent(category)}`}
-                    className="px-3 py-1.5 text-sm rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                    key={cat}
+                    href={`/category/${encodeURIComponent(cat)}`}
+                    className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                      cat === decodedCategory
+                        ? "bg-black text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                   >
-                    {category}
+                    {cat}
                   </Link>
                 ))}
               </div>
             </div>
-
+            <div className="hidden xl:block mb-8">
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  {decodedCategory}
+                </h2>
+                <Badge variant="outline">{posts.length}개의 글</Badge>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {posts.map((post) => {
                 const title =
                   post.properties.이름?.title[0]?.plain_text || "제목 없음";
                 const date = post.properties.날짜?.date?.start || "";
-                const category = post.properties.카테고리?.select?.name || "";
                 const slug =
                   post.properties.Slug?.rich_text[0]?.plain_text || post.id;
-
                 return (
                   <Link
                     href={`/posts/${slug}`}
@@ -98,7 +125,7 @@ export default async function Home() {
                       <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
                           <div className="text-center p-8">
-                            <div className="text-6xl mb-4">🚀</div>
+                            <div className="text-6xl mb-4">📝</div>
                             <div className="text-lg font-semibold text-gray-800 mb-2">
                               {title.length > 20
                                 ? title.substring(0, 20) + "..."
@@ -116,11 +143,9 @@ export default async function Home() {
                       {/* Content */}
                       <div className="p-6">
                         {/* Category */}
-                        {category && (
-                          <div className="text-sm text-gray-500 mb-2">
-                            {category}
-                          </div>
-                        )}
+                        <div className="text-sm text-gray-500 mb-2">
+                          {decodedCategory}
+                        </div>
 
                         {/* Title */}
                         <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight group-hover:text-blue-600 transition-colors">
@@ -154,10 +179,11 @@ export default async function Home() {
                 );
               })}
             </div>
-
             {posts.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500">아직 게시물이 없습니다.</p>
+                <p className="text-gray-500">
+                  이 카테고리에는 아직 글이 없습니다.
+                </p>
               </div>
             )}
           </div>
