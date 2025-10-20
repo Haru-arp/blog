@@ -8,7 +8,7 @@ interface BackNavigationProps {
   category?: string;
 }
 
-export function BackNavigation({ category }: BackNavigationProps) {
+export function BackNavigation({ category = "" }: BackNavigationProps) {
   const backUrl = "/";
   const backText = "모든 게시글";
 

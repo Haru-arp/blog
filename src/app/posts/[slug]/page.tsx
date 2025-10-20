@@ -13,13 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { BackNavigation } from "@/components/back-navigation";
-import { NotionHeader } from "@/components/notion-header";
 
 export const revalidate = 60;
 

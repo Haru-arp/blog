@@ -1,9 +1,6 @@
 import { getPosts, getCategories } from "../../src/lib/notion";
 import type { Metadata } from "next";
-import { NotionHeader } from "@/components/notion-header";
 import { CategoryNavigation } from "@/components/category-navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 
