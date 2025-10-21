@@ -28,7 +28,7 @@ export async function generateStaticParams() {
   const posts = await getPosts();
   return posts.map((post) => {
     const pagePost = post as PageObjectResponse;
-    const slugProperty = pagePost.properties?.Slug;
+    const slugProperty = pagePost.properties?.slug;
     const slug =
       slugProperty &&
       "type" in slugProperty &&
@@ -56,8 +56,8 @@ export async function generateMetadata(props: {
       : "Post";
 
   return {
-    title: `${title} | Haru.dev`,
-    description: `"${title}" on Haru.dev Blog`,
+    title: `${title} | friday.tech`,
+    description: `"${title}" on friday.tech blog`,
   };
 }
 
@@ -72,6 +72,8 @@ const renderRichText = (richText: RichTextItemResponse[]) => {
   return richText.map((text, index) => {
     const { annotations, plain_text, href } = text;
     let element: React.ReactNode = plain_text;
+
+    // 기본 스타일 적용
     if (annotations.bold) element = <strong>{element}</strong>;
     if (annotations.italic) element = <em>{element}</em>;
     if (annotations.strikethrough) element = <del>{element}</del>;
@@ -95,6 +97,44 @@ const renderRichText = (richText: RichTextItemResponse[]) => {
         </a>
       );
     }
+
+    // 색상 처리를 위한 클래스 생성
+    const colorClasses: string[] = [];
+
+    // 텍스트 색상
+    if (annotations.color && annotations.color !== "default") {
+      const colorMap: { [key: string]: string } = {
+        gray: "text-gray-600",
+        brown: "text-amber-700",
+        orange: "text-orange-600",
+        yellow: "text-yellow-600",
+        green: "text-green-600",
+        blue: "text-blue-600",
+        purple: "text-purple-600",
+        pink: "text-pink-600",
+        red: "text-red-600",
+        gray_background: "bg-gray-100 text-gray-800 px-1 py-0.5 rounded",
+        brown_background: "bg-amber-100 text-amber-800 px-1 py-0.5 rounded",
+        orange_background: "bg-orange-100 text-orange-800 px-1 py-0.5 rounded",
+        yellow_background: "bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded",
+        green_background: "bg-green-100 text-green-800 px-1 py-0.5 rounded",
+        blue_background: "bg-blue-100 text-blue-800 px-1 py-0.5 rounded",
+        purple_background: "bg-purple-100 text-purple-800 px-1 py-0.5 rounded",
+        pink_background: "bg-pink-100 text-pink-800 px-1 py-0.5 rounded",
+        red_background: "bg-red-100 text-red-800 px-1 py-0.5 rounded",
+      };
+
+      const colorClass = colorMap[annotations.color as string];
+      if (colorClass) {
+        colorClasses.push(colorClass);
+      }
+    }
+
+    // 색상이 적용된 경우 span으로 감싸기
+    if (colorClasses.length > 0) {
+      element = <span className={colorClasses.join(" ")}>{element}</span>;
+    }
+
     return <span key={index}>{element}</span>;
   });
 };
@@ -152,6 +192,63 @@ const groupBlocks = (blocks: BlockObjectResponse[]) => {
   }
   return grouped;
 };
+
+// 리스트 아이템 컴포넌트 (중첩 리스트 지원)
+async function ListItem({
+  item,
+  type,
+}: {
+  item: BlockObjectResponse;
+  type: "bulleted" | "numbered";
+}) {
+  const listItem = item as BlockObjectResponse & {
+    bulleted_list_item?: { rich_text: RichTextItemResponse[] };
+    numbered_list_item?: { rich_text: RichTextItemResponse[] };
+  };
+
+  const richText =
+    type === "bulleted"
+      ? listItem.bulleted_list_item?.rich_text
+      : listItem.numbered_list_item?.rich_text;
+
+  // 자식 블록들 (중첩된 리스트) 가져오기
+  const children = await getBlockChildren(item.id);
+  const hasChildren = children && children.length > 0;
+
+  return (
+    <li className="leading-7">
+      {richText && renderRichText(richText)}
+      {hasChildren && (
+        <div className="mt-2">
+          {children.map((child) => {
+            if (!("type" in child)) return null;
+
+            if (child.type === "bulleted_list_item") {
+              return (
+                <ul key={child.id} className="list-disc pl-6 mt-2 space-y-1">
+                  <ListItem
+                    item={child as BlockObjectResponse}
+                    type="bulleted"
+                  />
+                </ul>
+              );
+            } else if (child.type === "numbered_list_item") {
+              return (
+                <ol key={child.id} className="list-decimal pl-6 mt-2 space-y-1">
+                  <ListItem
+                    item={child as BlockObjectResponse}
+                    type="numbered"
+                  />
+                </ol>
+              );
+            }
+            return null;
+          })}
+        </div>
+      )}
+    </li>
+  );
+}
 
 // 테이블 블록 컴포넌트
 async function TableBlock({ blockId }: { blockId: string }) {
@@ -258,31 +355,17 @@ const renderBlock = (
       if (block.listType === "bulleted_list_item") {
         return (
           <ul className="list-disc pl-6 mb-6 space-y-2 text-foreground">
-            {block.items.map((item: BlockObjectResponse) => {
-              const listItem = item as BlockObjectResponse & {
-                bulleted_list_item: { rich_text: RichTextItemResponse[] };
-              };
-              return (
-                <li key={item.id} className="leading-7">
-                  {renderRichText(listItem.bulleted_list_item.rich_text)}
-                </li>
-              );
-            })}
+            {block.items.map((item: BlockObjectResponse) => (
+              <ListItem key={item.id} item={item} type="bulleted" />
+            ))}
           </ul>
         );
       } else if (block.listType === "numbered_list_item") {
         return (
           <ol className="list-decimal pl-6 mb-6 space-y-2 text-foreground">
-            {block.items.map((item: BlockObjectResponse) => {
-              const listItem = item as BlockObjectResponse & {
-                numbered_list_item: { rich_text: RichTextItemResponse[] };
-              };
-              return (
-                <li key={item.id} className="leading-7">
-                  {renderRichText(listItem.numbered_list_item.rich_text)}
-                </li>
-              );
-            })}
+            {block.items.map((item: BlockObjectResponse) => (
+              <ListItem key={item.id} item={item} type="numbered" />
+            ))}
           </ol>
         );
       }

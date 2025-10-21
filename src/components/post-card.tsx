@@ -39,8 +39,8 @@ export function PostCard({ post, author }: PostCardProps) {
           .filter(Boolean) || []
       : [];
 
-  // Slug 속성 처리
-  const slugProperty = post.properties.Slug;
+  // slug 속성 처리
+  const slugProperty = post.properties.slug;
   const slug =
     slugProperty && "type" in slugProperty && slugProperty.type === "rich_text"
       ? slugProperty.rich_text?.[0]?.plain_text || post.id

@@ -14,9 +14,9 @@ export function CategoryNavigation({ categories }: CategoryNavigationProps) {
     <div className="sticky top-8">
       <div className="xl:border-r xl:border-gray-200 xl:pr-8 xl:min-h-[calc(100vh-6rem)]">
         <h1 className="text-5xl font-bold mb-4 leading-tight">
-          Haru&apos;s
+          Friday.
           <br />
-          <span className="italic font-light">Dev</span>
+          <span className="italic font-light">Tech</span>
         </h1>
         <p className="text-gray-600 text-lg leading-relaxed mb-8">
           업무 방식의 미래를 이끄는 사람들과

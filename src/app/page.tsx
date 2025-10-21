@@ -6,8 +6,8 @@ import Link from "next/link";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
 export const metadata: Metadata = {
-  title: "Tools & Craft | Haru.dev",
-  description: "Modern blog by Haru",
+  title: "friday.tech",
+  description: "Team Friday's Tech Blog",
 };
 
 export const revalidate = 60;
@@ -50,9 +50,9 @@ export default async function Home() {
             {/* Mobile Title */}
             <div className="xl:hidden mb-8">
               <h1 className="text-5xl font-bold mb-4 leading-tight">
-                Haru&apos;s
+                Friday.
                 <br />
-                <span className="italic font-light">Dev</span>
+                <span className="italic font-light">Tech</span>
               </h1>
               <p className="text-gray-600 text-base leading-relaxed mb-6">
                 업무 방식의 미래를 이끄는 사람들과

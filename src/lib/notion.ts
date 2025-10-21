@@ -50,7 +50,7 @@ export const getPageBySlugValue = async (slug: string) => {
     const response = await notion.dataSources.query({
       data_source_id: process.env.NOTION_DATABASE_ID,
       filter: {
-        property: "Slug",
+        property: "slug",
         rich_text: {
           equals: slug,
         },

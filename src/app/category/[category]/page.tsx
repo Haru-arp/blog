@@ -40,8 +40,8 @@ export async function generateMetadata(props: {
   const { category } = await props.params;
   const decodedCategory = decodeURIComponent(category);
   return {
-    title: `${decodedCategory} | Haru.dev`,
-    description: `${decodedCategory} 카테고리의 글들`,
+    title: `${decodedCategory} | friday.tech`,
+    description: `${decodedCategory} on friday.tech blog`,
   };
 }
 
