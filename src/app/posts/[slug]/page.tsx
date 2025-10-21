@@ -3,36 +3,57 @@ import {
   getPageBySlug,
   getPageContent,
   getPageBySlugValue,
+  getUserInfo,
 } from "../../../lib/notion";
 import type { Metadata } from "next";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Link from "next/link";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { BackNavigation } from "@/components/back-navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
+import type {
+  PageObjectResponse,
+  BlockObjectResponse,
+  RichTextItemResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 
 export const revalidate = 60;
 
 export async function generateStaticParams() {
-  const posts: any[] = await getPosts();
-  return posts.map((post) => ({
-    slug: post.properties.Slug?.rich_text[0]?.plain_text || post.id,
-  }));
+  const posts = await getPosts();
+  return posts.map((post) => {
+    const pagePost = post as PageObjectResponse;
+    const slugProperty = pagePost.properties?.Slug;
+    const slug =
+      slugProperty &&
+      "type" in slugProperty &&
+      slugProperty.type === "rich_text"
+        ? slugProperty.rich_text?.[0]?.plain_text || pagePost.id
+        : pagePost.id;
+    return { slug };
+  });
 }
 
 export async function generateMetadata(props: {
   params: { slug: string };
 }): Promise<Metadata> {
   const { slug } = await props.params;
-  let page: any = await getPageBySlugValue(slug);
+  let page = await getPageBySlugValue(slug);
   if (!page) {
     page = await getPageBySlug(slug);
   }
-  const title = page?.properties?.이름?.title[0]?.plain_text || "Post";
+
+  const pagePost = page as PageObjectResponse;
+  const titleProperty = pagePost?.properties?.이름;
+  const title =
+    titleProperty && "type" in titleProperty && titleProperty.type === "title"
+      ? titleProperty.title?.[0]?.plain_text || "Post"
+      : "Post";
+
   return {
     title: `${title} | Haru.dev`,
     description: `"${title}" on Haru.dev Blog`,
@@ -45,7 +66,7 @@ type PageProps = {
   };
 };
 
-const renderRichText = (richText: any[]) => {
+const renderRichText = (richText: RichTextItemResponse[]) => {
   if (!richText) return null;
   return richText.map((text, index) => {
     const { annotations, plain_text, href } = text;
@@ -77,9 +98,17 @@ const renderRichText = (richText: any[]) => {
   });
 };
 
-const groupBlocks = (blocks: any[]) => {
-  const grouped: any[] = [];
-  let currentGroup: any[] = [];
+const groupBlocks = (blocks: BlockObjectResponse[]) => {
+  const grouped: (
+    | BlockObjectResponse
+    | {
+        type: "list_group";
+        listType: string;
+        items: BlockObjectResponse[];
+        id: string;
+      }
+  )[] = [];
+  let currentGroup: BlockObjectResponse[] = [];
   let currentGroupType: string | null = null;
 
   for (const block of blocks) {
@@ -97,7 +126,7 @@ const groupBlocks = (blocks: any[]) => {
       if (currentGroup.length > 0) {
         grouped.push({
           type: "list_group",
-          listType: currentGroupType,
+          listType: currentGroupType || "bulleted_list_item",
           items: currentGroup,
           id: `group-${currentGroup[0].id}`,
         });
@@ -115,7 +144,7 @@ const groupBlocks = (blocks: any[]) => {
   if (currentGroup.length > 0) {
     grouped.push({
       type: "list_group",
-      listType: currentGroupType,
+      listType: currentGroupType || "bulleted_list_item",
       items: currentGroup,
       id: `group-${currentGroup[0].id}`,
     });
@@ -123,80 +152,173 @@ const groupBlocks = (blocks: any[]) => {
   return grouped;
 };
 
-const renderBlock = (block: any) => {
+const renderBlock = (
+  block:
+    | BlockObjectResponse
+    | {
+        type: "list_group";
+        listType: string;
+        items: BlockObjectResponse[];
+        id: string;
+      }
+) => {
   switch (block.type) {
     case "heading_1":
+      const heading1Block = block as BlockObjectResponse & {
+        heading_1: { rich_text: RichTextItemResponse[] };
+      };
       return (
         <h1 className="text-3xl font-bold mt-12 mb-6 tracking-tight">
-          {renderRichText(block.heading_1.rich_text)}
+          {renderRichText(heading1Block.heading_1.rich_text)}
         </h1>
       );
     case "heading_2":
+      const heading2Block = block as BlockObjectResponse & {
+        heading_2: { rich_text: RichTextItemResponse[] };
+      };
       return (
         <h2 className="text-2xl font-semibold mt-10 mb-4 tracking-tight">
-          {renderRichText(block.heading_2.rich_text)}
+          {renderRichText(heading2Block.heading_2.rich_text)}
         </h2>
       );
     case "heading_3":
+      const heading3Block = block as BlockObjectResponse & {
+        heading_3: { rich_text: RichTextItemResponse[] };
+      };
       return (
         <h3 className="text-xl font-semibold mt-8 mb-3 tracking-tight">
-          {renderRichText(block.heading_3.rich_text)}
+          {renderRichText(heading3Block.heading_3.rich_text)}
         </h3>
       );
     case "paragraph":
+      const paragraphBlock = block as BlockObjectResponse & {
+        paragraph: { rich_text: RichTextItemResponse[] };
+      };
       return (
         <p className="leading-7 mb-6 text-foreground">
-          {renderRichText(block.paragraph.rich_text)}
+          {renderRichText(paragraphBlock.paragraph.rich_text)}
         </p>
       );
     case "list_group":
       if (block.listType === "bulleted_list_item") {
         return (
           <ul className="list-disc pl-6 mb-6 space-y-2 text-foreground">
-            {block.items.map((item: any) => (
-              <li key={item.id} className="leading-7">
-                {renderRichText(item.bulleted_list_item.rich_text)}
-              </li>
-            ))}
+            {block.items.map((item: BlockObjectResponse) => {
+              const listItem = item as BlockObjectResponse & {
+                bulleted_list_item: { rich_text: RichTextItemResponse[] };
+              };
+              return (
+                <li key={item.id} className="leading-7">
+                  {renderRichText(listItem.bulleted_list_item.rich_text)}
+                </li>
+              );
+            })}
           </ul>
         );
       } else if (block.listType === "numbered_list_item") {
         return (
           <ol className="list-decimal pl-6 mb-6 space-y-2 text-foreground">
-            {block.items.map((item: any) => (
-              <li key={item.id} className="leading-7">
-                {renderRichText(item.numbered_list_item.rich_text)}
-              </li>
-            ))}
+            {block.items.map((item: BlockObjectResponse) => {
+              const listItem = item as BlockObjectResponse & {
+                numbered_list_item: { rich_text: RichTextItemResponse[] };
+              };
+              return (
+                <li key={item.id} className="leading-7">
+                  {renderRichText(listItem.numbered_list_item.rich_text)}
+                </li>
+              );
+            })}
           </ol>
         );
       }
       break;
     case "quote":
+      const quoteBlock = block as BlockObjectResponse & {
+        quote: { rich_text: RichTextItemResponse[] };
+      };
       return (
         <blockquote className="border-l-4 border-border pl-6 mb-6 italic text-muted-foreground bg-muted/50 py-4 rounded-r-lg">
-          {renderRichText(block.quote.rich_text)}
+          {renderRichText(quoteBlock.quote.rich_text)}
         </blockquote>
       );
     case "callout":
-      const emoji = block.callout.icon?.emoji || "💡";
+      const calloutBlock = block as BlockObjectResponse & {
+        callout: {
+          rich_text: RichTextItemResponse[];
+          icon?: { emoji?: string };
+        };
+      };
+      const emoji = calloutBlock.callout.icon?.emoji || "💡";
       return (
         <Alert className="mb-6">
           <div className="flex items-start gap-3">
             <span className="text-xl">{emoji}</span>
             <AlertDescription className="text-sm leading-6">
-              {renderRichText(block.callout.rich_text)}
+              {renderRichText(calloutBlock.callout.rich_text)}
             </AlertDescription>
           </div>
         </Alert>
       );
     case "divider":
       return <Separator className="my-8" />;
+    case "image":
+      const imageBlock = block as BlockObjectResponse & {
+        image: {
+          type: "file" | "external";
+          file?: { url: string };
+          external?: { url: string };
+          caption?: RichTextItemResponse[];
+        };
+      };
+      const imageUrl =
+        imageBlock.image.type === "file"
+          ? imageBlock.image.file?.url
+          : imageBlock.image.external?.url;
+      const caption = imageBlock.image.caption;
+
+      if (!imageUrl) return null;
+
+      // GIF나 애니메이션 이미지는 일반 img 태그 사용
+      const isAnimated =
+        imageUrl.toLowerCase().includes(".gif") ||
+        imageUrl.includes("giphy.com");
+
+      return (
+        <div className="mb-6">
+          {isAnimated ? (
+            <img
+              src={imageUrl}
+              alt={caption?.[0]?.plain_text || "Image"}
+              className="w-full h-auto rounded-lg max-w-full"
+            />
+          ) : (
+            <Image
+              src={imageUrl}
+              alt={caption?.[0]?.plain_text || "Image"}
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-full h-auto rounded-lg"
+            />
+          )}
+          {caption && caption.length > 0 && (
+            <p className="text-sm text-gray-500 text-center mt-2 italic">
+              {renderRichText(caption)}
+            </p>
+          )}
+        </div>
+      );
     case "code":
+      const codeBlock = block as BlockObjectResponse & {
+        code: {
+          rich_text: RichTextItemResponse[];
+          language?: string;
+        };
+      };
       return (
         <div className="mb-6 rounded-lg overflow-hidden border">
           <SyntaxHighlighter
-            language={block.code.language || "text"}
+            language={codeBlock.code.language || "text"}
             style={oneLight}
             customStyle={{
               margin: 0,
@@ -206,7 +328,7 @@ const renderBlock = (block: any) => {
               background: "transparent",
             }}
           >
-            {block.code.rich_text[0]?.plain_text || ""}
+            {codeBlock.code.rich_text[0]?.plain_text || ""}
           </SyntaxHighlighter>
         </div>
       );
@@ -231,7 +353,7 @@ function formatDate(dateString: string) {
 
 export default async function PostPage(props: PageProps) {
   const { slug } = await props.params;
-  let page: any = await getPageBySlugValue(slug);
+  let page = await getPageBySlugValue(slug);
   let pageId = page?.id;
   if (!page) {
     page = await getPageBySlug(slug);
@@ -255,58 +377,153 @@ export default async function PostPage(props: PageProps) {
     );
   }
 
-  const content: any[] = await getPageContent(pageId);
-  const title = page.properties.이름?.title[0]?.plain_text || "제목 없음";
-  const date = page.properties.날짜?.date?.start || "";
-  const category = page.properties.카테고리?.select?.name || "";
+  const content = (await getPageContent(
+    pageId || slug
+  )) as BlockObjectResponse[];
+
+  const pagePost = page as PageObjectResponse;
+
+  // 제목 속성 처리
+  const titleProperty = pagePost.properties?.이름;
+  const title =
+    titleProperty && "type" in titleProperty && titleProperty.type === "title"
+      ? titleProperty.title?.[0]?.plain_text || "제목 없음"
+      : "제목 없음";
+
+  // 날짜 속성 처리
+  const dateProperty = pagePost.properties?.날짜;
+  const date =
+    dateProperty && "type" in dateProperty && dateProperty.type === "date"
+      ? dateProperty.date?.start || ""
+      : "";
+
+  // 카테고리 속성 처리
+  const categoryProperty = pagePost.properties?.카테고리;
+  const categories =
+    categoryProperty &&
+    "type" in categoryProperty &&
+    categoryProperty.type === "multi_select"
+      ? (
+          categoryProperty as {
+            type: "multi_select";
+            multi_select: Array<{ name: string; id: string; color: string }>;
+          }
+        ).multi_select
+          ?.map((cat) => cat.name)
+          .filter(Boolean) || []
+      : [];
+
+  // Position 속성 처리
+  const positionProperty = pagePost.properties?.position;
+  const position =
+    positionProperty &&
+    "type" in positionProperty &&
+    positionProperty.type === "select"
+      ? positionProperty.select?.name || "개발자"
+      : "개발자";
+
   const groupedContent = groupBlocks(content);
+
+  // 작성자 정보 가져오기
+  const authorId = pagePost.created_by?.id;
+  const authorInfo = authorId ? await getUserInfo(authorId) : null;
+  const author = authorInfo
+    ? {
+        name: authorInfo.name,
+        avatar_url: authorInfo.avatar_url,
+      }
+    : null;
+
+  // 커버 이미지 처리
+  const coverImage = pagePost.cover
+    ? pagePost.cover.type === "external"
+      ? pagePost.cover.external?.url
+      : pagePost.cover.type === "file"
+      ? pagePost.cover.file?.url
+      : null
+    : null;
 
   return (
     <div className="min-h-screen bg-white">
       <main className="max-w-7xl mx-auto px-8 py-12">
-        <div className="xl:grid xl:grid-cols-[120px_auto] xl:gap-8">
+        <div className="xl:grid xl:grid-cols-[300px_auto] xl:gap-12">
+          {/* Left Side - Back Navigation */}
           <div className="hidden xl:block">
-            <BackNavigation category={category} />
+            <div className="sticky top-8">
+              <Link
+                href="/"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                모든 게시글
+              </Link>
+            </div>
           </div>
+
+          {/* Right Side - Article Content */}
           <div className="max-w-4xl">
             {/* Mobile Back Button */}
-            <div className="xl:hidden mb-6">
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  className="p-0 h-auto font-normal text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                >
-                  <ArrowLeft className="mr-1 h-4 w-4" />
-                  모든 게시글
-                </Button>
+            <div className="xl:hidden mb-8">
+              <Link
+                href="/"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                모든 게시글
               </Link>
             </div>
 
-            <header className="mb-12">
-              {category && (
-                <div className="mb-4">
-                  <Link href={`/category/${encodeURIComponent(category)}`}>
-                    <Badge
-                      variant="outline"
-                      className="hover:bg-gray-100 cursor-pointer"
-                    >
-                      {category}
-                    </Badge>
-                  </Link>
+            {/* Article Header */}
+            <header className="my-15">
+              {/* Categories and Date */}
+              <div className="flex items-center mb-3 gap-1 text-sm text-[#0009]">
+                <div className="flex items-center gap-1">
+                  {categories.length > 0 && (
+                    <>
+                      {categories.map((cat, index) => (
+                        <Link
+                          key={index}
+                          href={`/category/${encodeURIComponent(cat)}`}
+                          className="hover:text-gray-700 transition-colors underline"
+                        >
+                          {cat}
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
-              )}
-              <h1 className="text-4xl font-bold tracking-tight mb-6 leading-tight text-gray-900">
+                {date && <div>{formatDate(date)}</div>}
+              </div>
+
+              {/* Title */}
+              <h1 className="text-[32px] xl:text-[54px] font-bold tracking-tight leading-none text-[#191918]">
                 {title}
               </h1>
-              {date && (
-                <div className="flex items-center text-gray-500 mb-8">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <time dateTime={date}>{formatDate(date)}</time>
+
+              {/* Author Info */}
+              <div className="flex items-center justify-start gap-2.5 mt-3">
+                <Avatar className="w-12 h-12">
+                  {author?.avatar_url && (
+                    <AvatarImage
+                      src={author.avatar_url}
+                      alt={author.name || "Author"}
+                    />
+                  )}
+                  <AvatarFallback className="text-sm  text-[#191918] font-medium">
+                    {author?.name?.charAt(0)?.toUpperCase() || "H"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm text-[#191918] font-medium">
+                    작성자 {author?.name || "???"}
+                  </p>
+                  <p className="text-[12px] text-[#a39e98]">{position}</p>
                 </div>
-              )}
-              <div className="border-b border-gray-200"></div>
+              </div>
             </header>
-            <article className="prose prose-lg max-w-none">
+
+            {/* Article Content */}
+            <article className="prose prose-lg prose-gray max-w-none">
               {groupedContent.map((block) => (
                 <div key={block.id}>{renderBlock(block)}</div>
               ))}

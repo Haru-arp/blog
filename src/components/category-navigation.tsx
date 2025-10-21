@@ -14,7 +14,7 @@ export function CategoryNavigation({ categories }: CategoryNavigationProps) {
     <div className="sticky top-8">
       <div className="xl:border-r xl:border-gray-200 xl:pr-8 xl:min-h-[calc(100vh-6rem)]">
         <h1 className="text-5xl font-bold mb-4 leading-tight">
-          Haru's
+          Haru&apos;s
           <br />
           <span className="italic font-light">Dev</span>
         </h1>
@@ -34,7 +34,7 @@ export function CategoryNavigation({ categories }: CategoryNavigationProps) {
                   : "text-gray-600 hover:text-black"
               }`}
             >
-              최근
+              모든 게시글
             </Link>
 
             {categories.map((category) => {

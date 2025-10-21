@@ -4,17 +4,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface BackNavigationProps {
-  category?: string;
-}
-
-export function BackNavigation({ category = "" }: BackNavigationProps) {
+export function BackNavigation() {
   const backUrl = "/";
   const backText = "모든 게시글";
 
   return (
-    <div className="sticky top-8">
-      <div className="xl:pr-4">
+    <div className="sticky top-8 ">
+      <div className="xl:pr-4 xl:w-[150px]">
         <Link href={backUrl}>
           <Button
             variant="ghost"
