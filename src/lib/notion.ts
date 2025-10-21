@@ -120,3 +120,15 @@ export const getUserInfo = async (userId: string) => {
     return null;
   }
 };
+
+export const getBlockChildren = async (blockId: string) => {
+  try {
+    const response = await notion.blocks.children.list({
+      block_id: blockId,
+    });
+    return response.results;
+  } catch (error) {
+    console.error("Error fetching block children:", error);
+    return [];
+  }
+};

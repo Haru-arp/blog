@@ -4,6 +4,7 @@ import {
   getPageContent,
   getPageBySlugValue,
   getUserInfo,
+  getBlockChildren,
 } from "../../../lib/notion";
 import type { Metadata } from "next";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -152,6 +153,60 @@ const groupBlocks = (blocks: BlockObjectResponse[]) => {
   return grouped;
 };
 
+// 테이블 블록 컴포넌트
+async function TableBlock({ blockId }: { blockId: string }) {
+  const tableRows = await getBlockChildren(blockId);
+
+  if (!tableRows || tableRows.length === 0) {
+    return (
+      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+        <p className="text-gray-500 text-sm">빈 테이블</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-6 overflow-x-auto">
+      <table className="min-w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+        <tbody>
+          {tableRows.map((row, rowIndex) => {
+            const tableRow = row as BlockObjectResponse & {
+              table_row: {
+                cells: RichTextItemResponse[][];
+              };
+            };
+
+            if (!("type" in row) || row.type !== "table_row") return null;
+
+            return (
+              <tr
+                key={row.id}
+                className={rowIndex === 0 ? "bg-gray-50" : "bg-white"}
+              >
+                {tableRow.table_row.cells.map((cell, cellIndex) => {
+                  const CellTag = rowIndex === 0 ? "th" : "td";
+                  return (
+                    <CellTag
+                      key={cellIndex}
+                      className={`px-4 py-3 border border-gray-300 text-left ${
+                        rowIndex === 0
+                          ? "font-semibold text-gray-900"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {renderRichText(cell)}
+                    </CellTag>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 const renderBlock = (
   block:
     | BlockObjectResponse
@@ -261,6 +316,11 @@ const renderBlock = (
       );
     case "divider":
       return <Separator className="my-8" />;
+    case "table":
+      return <TableBlock blockId={block.id} />;
+    case "table_row":
+      // 테이블 행은 TableBlock 컴포넌트에서 처리됩니다
+      return null;
     case "image":
       const imageBlock = block as BlockObjectResponse & {
         image: {
