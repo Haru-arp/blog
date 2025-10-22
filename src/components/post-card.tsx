@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { defaultBlurDataURL } from "@/lib/image-blur";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
 type Post = PageObjectResponse;
@@ -13,9 +14,10 @@ interface Author {
 interface PostCardProps {
   post: Post;
   author?: Author;
+  priority?: boolean;
 }
 
-export function PostCard({ post, author }: PostCardProps) {
+export function PostCard({ post, author, priority = false }: PostCardProps) {
   // 제목 속성 처리
   const titleProperty = post.properties.이름;
   const title =
@@ -85,6 +87,9 @@ export function PostCard({ post, author }: PostCardProps) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={priority}
+              placeholder="blur"
+              blurDataURL={defaultBlurDataURL}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

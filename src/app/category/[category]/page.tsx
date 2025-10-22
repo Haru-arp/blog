@@ -142,8 +142,13 @@ export default async function CategoryPage(props: {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {postsWithAuthors.map(({ post, author }) => (
-                <PostCard key={post.id} post={post} author={author} />
+              {postsWithAuthors.map(({ post, author }, index) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  author={author}
+                  priority={index < 2} // 첫 2개 이미지에 우선순위
+                />
               ))}
             </div>
             {postsWithAuthors.length === 0 && (

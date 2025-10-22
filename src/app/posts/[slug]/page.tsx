@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ToggleBlock } from "@/components/toggle-block";
+import { defaultBlurDataURL } from "@/lib/image-blur";
 import Image from "next/image";
 import type {
   PageObjectResponse,
@@ -250,6 +252,30 @@ async function ListItem({
   );
 }
 
+// 토글 블록 래퍼 컴포넌트
+async function ToggleBlockWrapper({
+  blockId,
+  richText,
+}: {
+  blockId: string;
+  richText: RichTextItemResponse[];
+}) {
+  const children = await getBlockChildren(blockId);
+  const groupedChildren = groupBlocks(children as BlockObjectResponse[]);
+
+  return (
+    <ToggleBlock richText={richText}>
+      {groupedChildren.length > 0 && (
+        <div>
+          {groupedChildren.map((childBlock) => (
+            <div key={childBlock.id}>{renderBlock(childBlock)}</div>
+          ))}
+        </div>
+      )}
+    </ToggleBlock>
+  );
+}
+
 // 테이블 블록 컴포넌트
 async function TableBlock({ blockId }: { blockId: string }) {
   const tableRows = await getBlockChildren(blockId);
@@ -433,6 +459,7 @@ const renderBlock = (
               src={imageUrl}
               alt={caption?.[0]?.plain_text || "Image"}
               className="w-full h-auto rounded-lg max-w-full"
+              loading="lazy"
             />
           ) : (
             <Image
@@ -442,6 +469,8 @@ const renderBlock = (
               height={0}
               sizes="100vw"
               className="w-full h-auto rounded-lg"
+              placeholder="blur"
+              blurDataURL={defaultBlurDataURL}
             />
           )}
           {caption && caption.length > 0 && (
@@ -474,6 +503,64 @@ const renderBlock = (
             {codeBlock.code.rich_text[0]?.plain_text || ""}
           </SyntaxHighlighter>
         </div>
+      );
+    case "to_do":
+      const todoBlock = block as BlockObjectResponse & {
+        to_do: {
+          rich_text: RichTextItemResponse[];
+          checked: boolean;
+        };
+      };
+      return (
+        <div className="flex items-start gap-3 mb-4">
+          <div className="flex-shrink-0 mt-1">
+            <div
+              className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center ${
+                todoBlock.to_do.checked
+                  ? "bg-blue-500 border-blue-500 text-white"
+                  : "border-gray-300 bg-white"
+              }`}
+            >
+              {todoBlock.to_do.checked && (
+                <svg
+                  className="w-3 h-3"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+          <div
+            className={`flex-1 leading-7 ${
+              todoBlock.to_do.checked
+                ? "line-through text-gray-500"
+                : "text-foreground"
+            }`}
+          >
+            {renderRichText(todoBlock.to_do.rich_text)}
+          </div>
+        </div>
+      );
+    case "toggle":
+      const toggleBlock = block as BlockObjectResponse & {
+        toggle: {
+          rich_text: RichTextItemResponse[];
+        };
+      };
+
+      // 토글 블록의 자식 콘텐츠를 비동기로 가져와야 하므로 별도 컴포넌트 필요
+      return (
+        <ToggleBlockWrapper
+          key={block.id}
+          blockId={block.id}
+          richText={toggleBlock.toggle.rich_text}
+        />
       );
     default:
       return (
