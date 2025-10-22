@@ -458,8 +458,9 @@ const renderBlock = (
             <img
               src={imageUrl}
               alt={caption?.[0]?.plain_text || "Image"}
-              className="w-full h-auto rounded-lg max-w-full"
-              loading="lazy"
+              className="w-full h-auto rounded-lg"
+              loading="eager"
+              decoding="async"
             />
           ) : (
             <Image
@@ -469,8 +470,8 @@ const renderBlock = (
               height={0}
               sizes="100vw"
               className="w-full h-auto rounded-lg"
-              placeholder="blur"
-              blurDataURL={defaultBlurDataURL}
+              quality={90}
+              priority={false}
             />
           )}
           {caption && caption.length > 0 && (
