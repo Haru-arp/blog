@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { CategoryNavigation } from "@/components/category-navigation";
 import { PostCard } from "@/components/post-card";
+import { BrandHeader } from "@/components/brand-header";
 import Link from "next/link";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
@@ -97,10 +98,12 @@ export default async function CategoryPage(props: {
           </div>
           <div>
             <div className="xl:hidden mb-8">
+              <BrandHeader />
+
               <div className="flex items-center gap-3 mb-4">
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h2 className="text-3xl font-bold text-gray-900">
                   {decodedCategory}
-                </h1>
+                </h2>
                 <Badge variant="outline">
                   {postsWithAuthors.length}개의 글
                 </Badge>

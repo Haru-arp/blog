@@ -2,6 +2,7 @@ import { getPosts, getCategories, getUserInfo } from "../../src/lib/notion";
 import type { Metadata } from "next";
 import { CategoryNavigation } from "@/components/category-navigation";
 import { PostCard } from "@/components/post-card";
+import { BrandHeader } from "@/components/brand-header";
 import Link from "next/link";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
@@ -49,16 +50,7 @@ export default async function Home() {
           <div>
             {/* Mobile Title */}
             <div className="xl:hidden mb-8">
-              <h1 className="text-5xl font-bold mb-4 leading-tight">
-                Friday.
-                <br />
-                <span className="italic font-light">Tech</span>
-              </h1>
-              <p className="text-gray-600 text-base leading-relaxed mb-6">
-                업무 방식의 미래를 이끄는 사람들과
-                <br />
-                팀이 전하는 생각
-              </p>
+              <BrandHeader />
 
               {/* Mobile Category Navigation */}
               <div className="flex flex-wrap gap-2 mb-6">

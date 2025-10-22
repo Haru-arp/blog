@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandHeader } from "./brand-header";
 
 interface CategoryNavigationProps {
   categories: string[];
@@ -13,16 +14,7 @@ export function CategoryNavigation({ categories }: CategoryNavigationProps) {
   return (
     <div className="sticky top-8">
       <div className="xl:border-r xl:border-gray-200 xl:pr-8 xl:min-h-[calc(100vh-6rem)]">
-        <h1 className="text-5xl font-bold mb-4 leading-tight">
-          Friday.
-          <br />
-          <span className="italic font-light">Tech</span>
-        </h1>
-        <p className="text-gray-600 text-lg leading-relaxed mb-8">
-          업무 방식의 미래를 이끄는 사람들과
-          <br />
-          팀이 전하는 생각
-        </p>
+        <BrandHeader className="mb-8" descriptionSize="lg" />
 
         <div className="border-t border-gray-200 pt-8">
           <div className="space-y-1">
