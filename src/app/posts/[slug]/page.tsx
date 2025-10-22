@@ -577,15 +577,6 @@ export default async function PostPage(props: PageProps) {
       }
     : null;
 
-  // 커버 이미지 처리
-  const coverImage = pagePost.cover
-    ? pagePost.cover.type === "external"
-      ? pagePost.cover.external?.url
-      : pagePost.cover.type === "file"
-      ? pagePost.cover.file?.url
-      : null
-    : null;
-
   return (
     <div className="min-h-screen bg-white">
       <main className="max-w-7xl mx-auto px-8 py-12">
@@ -619,24 +610,26 @@ export default async function PostPage(props: PageProps) {
             {/* Article Header */}
             <header className="my-15">
               {/* Categories and Date */}
-              <div className="flex items-center mb-3 gap-1 text-sm text-[#0009]">
-                <div className="flex items-center gap-1">
-                  {categories.length > 0 && (
-                    <>
-                      {categories.map((cat, index) => (
-                        <Link
-                          key={index}
-                          href={`/category/${encodeURIComponent(cat)}`}
-                          className="hover:text-gray-700 transition-colors underline"
-                        >
-                          {cat}
-                        </Link>
-                      ))}
-                    </>
-                  )}
-                </div>
-                {date && <div>{formatDate(date)}</div>}
+              <div className="flex items-center flex-wrap gap-1 text-sm mb-1 text-[#0009]">
+                {categories.length > 0 && (
+                  <>
+                    {categories.map((cat, index) => (
+                      <Link
+                        key={index}
+                        href={`/category/${encodeURIComponent(cat)}`}
+                        className="hover:text-gray-700 whitespace-nowrap transition-colors underline"
+                      >
+                        {cat}
+                      </Link>
+                    ))}
+                  </>
+                )}
               </div>
+              {date && (
+                <div className="text-sm text-[#191918] mb-3">
+                  {formatDate(date)}
+                </div>
+              )}
 
               {/* Title */}
               <h1 className="text-[32px] xl:text-[54px] font-bold tracking-tight leading-none text-[#191918]">
