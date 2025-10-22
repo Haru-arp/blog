@@ -102,7 +102,7 @@ export function PostCard({ post, author }: PostCardProps) {
         <div>
           {/* All Categories */}
           {categories.length > 0 && (
-            <div className="flex flex-wrap h-6 gap-1.5 mb-1">
+            <div className="flex flex-wrap gap-1.5 mb-1">
               {categories.map((category, index) => (
                 <span
                   key={index}

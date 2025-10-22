@@ -100,22 +100,13 @@ export default async function CategoryPage(props: {
             <div className="xl:hidden mb-8">
               <BrandHeader />
 
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-3xl font-bold text-gray-900">
-                  {decodedCategory}
-                </h2>
-                <Badge variant="outline">
-                  {postsWithAuthors.length}개의 글
-                </Badge>
-              </div>
-
               {/* Mobile Category Navigation */}
               <div className="flex flex-wrap gap-2 mb-6">
                 <Link
                   href="/"
                   className="px-3 py-1.5 text-sm rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
                 >
-                  최근
+                  모든
                 </Link>
                 {categories.map((cat) => (
                   <Link
@@ -130,6 +121,14 @@ export default async function CategoryPage(props: {
                     {cat}
                   </Link>
                 ))}
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-3xl font-bold text-gray-900">
+                  {decodedCategory}
+                </h2>
+                <Badge variant="outline">
+                  {postsWithAuthors.length}개의 글
+                </Badge>
               </div>
             </div>
             <div className="hidden xl:block mb-8">
