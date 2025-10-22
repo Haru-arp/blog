@@ -20,6 +20,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/* Google Search Console 인증 메타 태그를 여기에 추가하세요 */}
+        {/* <meta name="google-site-verification" content="여기에_구글에서_제공한_코드_입력" /> */}
+        <meta
+          name="google-site-verification"
+          content="C13oYjpbEJuwGpLLDPTQjnhGSAA5iXr-2xprGA9Spjo"
+        />
+      </head>
       <body className="font-sans antialiased bg-white">
         <ThemeProvider
           attribute="class"
