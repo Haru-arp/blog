@@ -8,7 +8,49 @@ import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoint
 
 export const metadata: Metadata = {
   title: "friday.tech",
-  description: "Team Friday's Tech Blog",
+  description:
+    "배움과 도전의 흔적을 남기는 개발자들의 공간. 개발, 기술, 혁신에 대한 인사이트를 공유합니다.",
+  keywords: [
+    "기술 블로그",
+    "개발",
+    "프로그래밍",
+    "혁신",
+    "업무 효율성",
+    "Friday",
+    "AI",
+    "개발자",
+  ],
+  authors: [{ name: "Team Friday", url: "https://blog.friday.ai.kr" }],
+  creator: "Team Friday",
+  publisher: "Friday",
+  openGraph: {
+    title: "friday.tech",
+    description: "배움과 도전의 흔적을 남기는 개발자들의 공간",
+    url: "https://blog.friday.ai.kr",
+    siteName: "friday.tech",
+    type: "website",
+    locale: "ko_KR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "friday.tech",
+    description: "배움과 도전의 흔적을 남기는 개발자들의 공간",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    // Google Search Console 인증 코드 추가 시 사용
+    // google: "your-google-verification-code",
+  },
 };
 
 export const revalidate = 60;

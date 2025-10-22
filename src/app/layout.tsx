@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "friday.tech",
-  description: "Team Friday's Tech Blog",
+  description: "배움과 도전의 흔적을 남기는 개발자들의 공간",
 };
 
 export default function RootLayout({

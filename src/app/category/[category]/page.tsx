@@ -41,8 +41,22 @@ export async function generateMetadata(props: {
   const { category } = await props.params;
   const decodedCategory = decodeURIComponent(category);
   return {
-    title: `${decodedCategory} | friday.tech`,
-    description: `${decodedCategory} on friday.tech blog`,
+    title: `${decodedCategory} - friday.tech`,
+    description: `${decodedCategory} 카테고리의 최신 기술 글과 인사이트를 확인하세요.`,
+    keywords: [decodedCategory, "기술 블로그", "개발", "Friday"],
+    openGraph: {
+      title: `${decodedCategory} - friday.tech`,
+      description: `${decodedCategory} 카테고리의 최신 기술 글과 인사이트`,
+      url: `https://blog.friday.ai.kr/category/${encodeURIComponent(category)}`,
+      siteName: "friday.tech",
+      type: "website",
+      locale: "ko_KR",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${decodedCategory} - friday.tech`,
+      description: `${decodedCategory} 카테고리의 최신 기술 글과 인사이트`,
+    },
   };
 }
 

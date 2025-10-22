@@ -16,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ToggleBlock } from "@/components/toggle-block";
-import { defaultBlurDataURL } from "@/lib/image-blur";
 import Image from "next/image";
 import type {
   PageObjectResponse,
@@ -50,16 +49,82 @@ export async function generateMetadata(props: {
     page = await getPageBySlug(slug);
   }
 
+  if (!page) {
+    return {
+      title: "게시물을 찾을 수 없습니다 - friday.tech",
+      description: "요청하신 게시물을 찾을 수 없습니다.",
+    };
+  }
+
   const pagePost = page as PageObjectResponse;
+
+  // 제목 추출
   const titleProperty = pagePost?.properties?.이름;
   const title =
     titleProperty && "type" in titleProperty && titleProperty.type === "title"
       ? titleProperty.title?.[0]?.plain_text || "Post"
       : "Post";
 
+  // 설명 추출
+  const descriptionProperty = pagePost?.properties?.description;
+  const description =
+    descriptionProperty &&
+    "type" in descriptionProperty &&
+    descriptionProperty.type === "rich_text"
+      ? descriptionProperty.rich_text?.[0]?.plain_text ||
+        `${title}에 대한 Friday 팀의 기술 인사이트와 경험을 공유합니다.`
+      : `${title}에 대한 Friday 팀의 기술 인사이트와 경험을 공유합니다.`;
+
+  // 카테고리 추출
+  const categoryProperty = pagePost?.properties?.카테고리;
+  const categories =
+    categoryProperty &&
+    "type" in categoryProperty &&
+    categoryProperty.type === "multi_select"
+      ? (
+          categoryProperty as {
+            type: "multi_select";
+            multi_select: Array<{ name: string; id: string; color: string }>;
+          }
+        ).multi_select?.map((cat) => cat.name) || []
+      : [];
+
+  // 커버 이미지 추출
+  const coverImage = pagePost.cover
+    ? pagePost.cover.type === "external"
+      ? pagePost.cover.external?.url
+      : pagePost.cover.type === "file"
+      ? pagePost.cover.file?.url
+      : null
+    : null;
+
   return {
-    title: `${title} | friday.tech`,
-    description: `"${title}" on friday.tech blog`,
+    title: `${title} - friday.tech`,
+    description: description,
+    keywords: [title, ...categories, "기술 블로그", "개발", "Friday"],
+    authors: [{ name: "Team Friday", url: "https://blog.friday.ai.kr" }],
+    openGraph: {
+      title: title,
+      description: description,
+      url: `https://blog.friday.ai.kr/posts/${slug}`,
+      siteName: "friday.tech",
+      type: "article",
+      locale: "ko_KR",
+      ...(coverImage && { images: [{ url: coverImage, alt: title }] }),
+      publishedTime: pagePost.created_time,
+      modifiedTime: pagePost.last_edited_time,
+      tags: categories,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      ...(coverImage && { images: [coverImage] }),
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 
