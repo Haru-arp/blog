@@ -104,7 +104,7 @@ export default async function CategoryPage(props: {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#252827] transition-colors">
       <main className="max-w-7xl mx-auto px-8 py-12">
         <div className="xl:grid xl:grid-cols-[300px_auto] xl:gap-12">
           <div className="hidden xl:block">
@@ -118,7 +118,7 @@ export default async function CategoryPage(props: {
               <div className="flex flex-wrap gap-2 mb-6">
                 <Link
                   href="/"
-                  className="px-3 py-1.5 text-sm rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  className="px-3 py-1.5 text-sm rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   모든
                 </Link>
@@ -128,8 +128,8 @@ export default async function CategoryPage(props: {
                     href={`/category/${encodeURIComponent(cat)}`}
                     className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                       cat === decodedCategory
-                        ? "bg-black text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-black dark:bg-white text-white dark:text-black"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                     }`}
                   >
                     {cat}
@@ -137,7 +137,7 @@ export default async function CategoryPage(props: {
                 ))}
               </div>
               <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-3xl font-bold text-gray-900">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                   {decodedCategory}
                 </h2>
                 <Badge variant="outline">
@@ -147,7 +147,7 @@ export default async function CategoryPage(props: {
             </div>
             <div className="hidden xl:block mb-8">
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {decodedCategory}
                 </h2>
                 <Badge variant="outline">
@@ -161,7 +161,7 @@ export default async function CategoryPage(props: {
                   key={post.id}
                   post={post}
                   author={author}
-                  priority={index < 2} // 첫 2개 이미지에 우선순위
+                  priority={index === 0} // 첫 번째 이미지만 우선순위
                 />
               ))}
             </div>

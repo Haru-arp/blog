@@ -78,7 +78,7 @@ export function PostCard({ post, author, priority = false }: PostCardProps) {
     <Link href={`/posts/${slug}`} className="block group">
       <article className="flex flex-col gap-[8px] overflow-hidden">
         {/* Hero Image */}
-        <div className="aspect-[16/9] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden border border-[#00000014] rounded-[0.375rem]">
+        <div className="aspect-[16/9] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 relative overflow-hidden border border-[#00000014] dark:border-gray-600 rounded-[0.375rem]">
           {coverImage ? (
             <Image
               src={coverImage}
@@ -93,7 +93,7 @@ export function PostCard({ post, author, priority = false }: PostCardProps) {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-5xl mb-3 opacity-80">📝</div>
-                <div className="text-sm font-medium text-gray-600 px-4">
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-300 px-4">
                   {title.length > 40 ? title.substring(0, 40) + "..." : title}
                 </div>
               </div>
@@ -109,7 +109,7 @@ export function PostCard({ post, author, priority = false }: PostCardProps) {
               {categories.map((category, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center text-xs font-medium text-[#00000096]"
+                  className="inline-flex items-center text-xs font-medium text-[#00000096] dark:text-gray-300"
                 >
                   {category}
                 </span>
@@ -118,12 +118,12 @@ export function PostCard({ post, author, priority = false }: PostCardProps) {
           )}
 
           {/* Title */}
-          <h2 className="text-[22px] font-semibold text-[#191918] leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+          <h2 className="text-[22px] font-semibold text-[#191918] dark:text-white leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
             {title}
           </h2>
 
           {/* Description */}
-          <div className="m-[8px_0_10px] text-[#00000096] text-[16px] leading-relaxed line-clamp-2">
+          <div className="m-[8px_0_10px] text-[#00000096] dark:text-gray-400 text-[16px] leading-relaxed line-clamp-2">
             {description ||
               "새로운 아이디어와 인사이트를 담은 실무형 콘텐츠입니다."}
           </div>
@@ -143,10 +143,12 @@ export function PostCard({ post, author, priority = false }: PostCardProps) {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-medium text-[#191918]">
+                <p className="text-sm font-medium text-[#191918] dark:text-white">
                   {author?.name || "???"}
                 </p>
-                <p className="text-xs text-[#a39e98]">{position}</p>
+                <p className="text-xs text-[#a39e98] dark:text-gray-400">
+                  {position}
+                </p>
               </div>
             </div>
           </div>

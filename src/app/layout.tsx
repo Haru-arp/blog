@@ -28,11 +28,11 @@ export default function RootLayout({
           content="C13oYjpbEJuwGpLLDPTQjnhGSAA5iXr-2xprGA9Spjo"
         />
       </head>
-      <body className="font-sans antialiased bg-white">
+      <body className="font-sans antialiased bg-white dark:bg-[#252827] transition-colors">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem={true}
           disableTransitionOnChange
         >
           <main className="max-w-[1392px] md:max-w-[940px] sm:max-w-[620px] lg:max-w-[1392px] m-auto min-h-screen mt-10">

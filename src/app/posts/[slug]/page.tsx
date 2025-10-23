@@ -8,7 +8,10 @@ import {
 } from "../../../lib/notion";
 import type { Metadata } from "next";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  oneLight,
+  oneDark,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +19,9 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ToggleBlock } from "@/components/toggle-block";
+import { ImageWithFallback } from "@/components/image-with-fallback";
+import { CodeBlock } from "@/components/code-block";
+import { ThemeToggle } from "@/components/theme-toggle";
 import Image from "next/image";
 import type {
   PageObjectResponse,
@@ -147,7 +153,7 @@ const renderRichText = (richText: RichTextItemResponse[]) => {
     if (annotations.underline) element = <u>{element}</u>;
     if (annotations.code) {
       element = (
-        <code className="bg-muted text-muted-foreground px-1.5 py-0.5 rounded text-sm font-mono">
+        <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1.5 py-0.5 rounded text-sm font-mono">
           {element}
         </code>
       );
@@ -180,15 +186,24 @@ const renderRichText = (richText: RichTextItemResponse[]) => {
         purple: "text-purple-600",
         pink: "text-pink-600",
         red: "text-red-600",
-        gray_background: "bg-gray-100 text-gray-800 px-1 py-0.5 rounded",
-        brown_background: "bg-amber-100 text-amber-800 px-1 py-0.5 rounded",
-        orange_background: "bg-orange-100 text-orange-800 px-1 py-0.5 rounded",
-        yellow_background: "bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded",
-        green_background: "bg-green-100 text-green-800 px-1 py-0.5 rounded",
-        blue_background: "bg-blue-100 text-blue-800 px-1 py-0.5 rounded",
-        purple_background: "bg-purple-100 text-purple-800 px-1 py-0.5 rounded",
-        pink_background: "bg-pink-100 text-pink-800 px-1 py-0.5 rounded",
-        red_background: "bg-red-100 text-red-800 px-1 py-0.5 rounded",
+        gray_background:
+          "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-1 py-0.5 rounded",
+        brown_background:
+          "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-1 py-0.5 rounded",
+        orange_background:
+          "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-1 py-0.5 rounded",
+        yellow_background:
+          "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-1 py-0.5 rounded",
+        green_background:
+          "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-1 py-0.5 rounded",
+        blue_background:
+          "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1 py-0.5 rounded",
+        purple_background:
+          "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-1 py-0.5 rounded",
+        pink_background:
+          "bg-pink-100 dark:bg-pink-900 text-pink-800 dark:text-pink-200 px-1 py-0.5 rounded",
+        red_background:
+          "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-1 py-0.5 rounded",
       };
 
       const colorClass = colorMap[annotations.color as string];
@@ -528,7 +543,7 @@ const renderBlock = (
               decoding="async"
             />
           ) : (
-            <Image
+            <ImageWithFallback
               src={imageUrl}
               alt={caption?.[0]?.plain_text || "Image"}
               width={0}
@@ -554,21 +569,10 @@ const renderBlock = (
         };
       };
       return (
-        <div className="mb-6 rounded-lg overflow-hidden border">
-          <SyntaxHighlighter
-            language={codeBlock.code.language || "text"}
-            style={oneLight}
-            customStyle={{
-              margin: 0,
-              padding: "1rem",
-              fontSize: "0.875rem",
-              lineHeight: "1.5",
-              background: "transparent",
-            }}
-          >
-            {codeBlock.code.rich_text[0]?.plain_text || ""}
-          </SyntaxHighlighter>
-        </div>
+        <CodeBlock
+          language={codeBlock.code.language || "text"}
+          code={codeBlock.code.rich_text[0]?.plain_text || ""}
+        />
       );
     case "to_do":
       const todoBlock = block as BlockObjectResponse & {
@@ -731,19 +735,22 @@ export default async function PostPage(props: PageProps) {
     : null;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#252827] transition-colors">
       <main className="max-w-7xl mx-auto px-8 py-12">
         <div className="xl:grid xl:grid-cols-[300px_auto] xl:gap-12">
           {/* Left Side - Back Navigation */}
           <div className="hidden xl:block">
             <div className="sticky top-8">
-              <Link
-                href="/"
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                모든 게시글
-              </Link>
+              <div className="flex items-center justify-between">
+                <Link
+                  href="/"
+                  className="inline-flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  모든 게시글
+                </Link>
+                <ThemeToggle size="sm" />
+              </div>
             </div>
           </div>
 
@@ -751,26 +758,29 @@ export default async function PostPage(props: PageProps) {
           <div className="max-w-4xl">
             {/* Mobile Back Button */}
             <div className="xl:hidden mb-8">
-              <Link
-                href="/"
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                모든 게시글
-              </Link>
+              <div className="flex items-center justify-between">
+                <Link
+                  href="/"
+                  className="inline-flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  모든 게시글
+                </Link>
+                <ThemeToggle size="xs" />
+              </div>
             </div>
 
             {/* Article Header */}
             <header className="my-15">
               {/* Categories and Date */}
-              <div className="flex items-center flex-wrap gap-1 text-sm mb-1 text-[#0009]">
+              <div className="flex items-center flex-wrap gap-1 text-sm mb-1 text-[#0009] dark:text-gray-400">
                 {categories.length > 0 && (
                   <>
                     {categories.map((cat, index) => (
                       <Link
                         key={index}
                         href={`/category/${encodeURIComponent(cat)}`}
-                        className="hover:text-gray-700 whitespace-nowrap transition-colors underline"
+                        className="hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap transition-colors underline"
                       >
                         {cat}
                       </Link>
@@ -779,34 +789,36 @@ export default async function PostPage(props: PageProps) {
                 )}
               </div>
               {date && (
-                <div className="text-sm text-[#191918] mb-3">
+                <div className="text-sm text-[#191918] dark:text-gray-300 mb-3">
                   {formatDate(date)}
                 </div>
               )}
 
               {/* Title */}
-              <h1 className="text-[32px] xl:text-[54px] font-bold tracking-tight leading-none text-[#191918]">
+              <h1 className="text-[32px] xl:text-[54px] font-bold tracking-tight leading-none text-[#191918] dark:text-white">
                 {title}
               </h1>
 
               {/* Author Info */}
               <div className="flex items-center justify-start gap-2.5 mt-3">
-                <Avatar className="w-12 h-12">
+                <Avatar className="w-9 h-9">
                   {author?.avatar_url && (
                     <AvatarImage
                       src={author.avatar_url}
                       alt={author.name || "Author"}
                     />
                   )}
-                  <AvatarFallback className="text-sm  text-[#191918] font-medium">
-                    {author?.name?.charAt(0)?.toUpperCase() || "H"}
+                  <AvatarFallback className="text-xs bg-blue-100 text-blue-700 font-medium">
+                    {author?.name?.charAt(0)?.toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm text-[#191918] font-medium">
-                    작성자 {author?.name || "???"}
+                  <p className="text-sm font-medium text-[#191918] dark:text-white">
+                    {author?.name || "???"}
                   </p>
-                  <p className="text-[12px] text-[#a39e98]">{position}</p>
+                  <p className="text-xs text-[#a39e98] dark:text-gray-400">
+                    {position}
+                  </p>
                 </div>
               </div>
             </header>

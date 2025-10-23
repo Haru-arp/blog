@@ -73,6 +73,7 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    qualities: [75, 85, 90, 95], // Next.js 16 호환성을 위한 품질 설정
     loader: "default",
   },
 };

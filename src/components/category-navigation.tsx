@@ -13,17 +13,17 @@ export function CategoryNavigation({ categories }: CategoryNavigationProps) {
 
   return (
     <div className="sticky top-8">
-      <div className="xl:border-r xl:border-gray-200 xl:pr-8 xl:min-h-[calc(100vh-6rem)]">
+      <div className="xl:border-r xl:border-gray-200 dark:xl:border-gray-700 xl:pr-8 xl:min-h-[calc(100vh-6rem)]">
         <BrandHeader className="mb-8" descriptionSize="lg" />
 
-        <div className="border-t border-gray-200 pt-8">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
           <div className="space-y-1">
             <Link
               href="/"
               className={`block text-sm py-2 transition-colors ${
                 pathname === "/"
-                  ? "text-black font-medium"
-                  : "text-gray-600 hover:text-black"
+                  ? "text-black dark:text-white font-medium"
+                  : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
               }`}
             >
               모든 게시글
@@ -39,8 +39,8 @@ export function CategoryNavigation({ categories }: CategoryNavigationProps) {
                   href={href}
                   className={`block text-sm py-2 transition-colors ${
                     isActive
-                      ? "text-black font-medium"
-                      : "text-gray-600 hover:text-black"
+                      ? "text-black dark:text-white font-medium"
+                      : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
                   }`}
                 >
                   {category}

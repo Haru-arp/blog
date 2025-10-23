@@ -3,23 +3,29 @@
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   oneLight,
-  oneDark,
+  dracula,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 interface CodeBlockProps {
   language: string;
-  children: string;
+  code: string;
 }
 
-export function CodeBlock({ language, children }: CodeBlockProps) {
+export function CodeBlock({ language, code }: CodeBlockProps) {
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <div className="mb-6 rounded-lg overflow-hidden border">
+    <div className="mb-6 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
       <SyntaxHighlighter
         language={language || "text"}
-        style={theme === "dark" ? oneDark : oneLight}
+        style={mounted && theme === "dark" ? dracula : oneLight}
         customStyle={{
           margin: 0,
           padding: "1rem",
@@ -28,7 +34,7 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
           background: "transparent",
         }}
       >
-        {children}
+        {code}
       </SyntaxHighlighter>
     </div>
   );
