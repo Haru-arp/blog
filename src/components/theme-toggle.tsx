@@ -19,22 +19,22 @@ export function ThemeToggle({ size = "md" }: ThemeToggleProps) {
   const getSizeClasses = () => {
     switch (size) {
       case "xs":
-        return "w-7 h-7 sm:w-7 sm:h-7";
+        return "w-7 h-7 sm:w-8 sm:h-8";
       case "sm":
-        return "w-8 h-8 sm:w-8 sm:h-8";
+        return "w-8 h-8 sm:w-9 sm:h-9";
       default:
-        return "w-9 h-9 sm:w-9 sm:h-9";
+        return "w-9 h-9 sm:w-10 sm:h-10";
     }
   };
 
   const getIconSize = () => {
     switch (size) {
       case "xs":
-        return "h-3.5 w-3.5 sm:h-3.5 sm:w-3.5";
+        return "h-3.5 w-3.5 sm:h-4 sm:w-4";
       case "sm":
-        return "h-4 w-4 sm:h-4 sm:w-4";
+        return "h-4 w-4 sm:h-4.5 sm:w-4.5";
       default:
-        return "h-4.5 w-4.5 sm:h-4 sm:w-4";
+        return "h-4.5 w-4.5 sm:h-5 sm:w-5";
     }
   };
 

@@ -7,11 +7,6 @@ import {
   getBlockChildren,
 } from "../../../lib/notion";
 import type { Metadata } from "next";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  oneLight,
-  oneDark,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +17,6 @@ import { ToggleBlock } from "@/components/toggle-block";
 import { ImageWithFallback } from "@/components/image-with-fallback";
 import { CodeBlock } from "@/components/code-block";
 import { ThemeToggle } from "@/components/theme-toggle";
-import Image from "next/image";
 import type {
   PageObjectResponse,
   BlockObjectResponse,
@@ -749,7 +743,7 @@ export default async function PostPage(props: PageProps) {
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   모든 게시글
                 </Link>
-                <ThemeToggle size="sm" />
+                <ThemeToggle size="xs" />
               </div>
             </div>
           </div>

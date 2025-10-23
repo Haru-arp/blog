@@ -23,7 +23,7 @@ export function BrandHeader({
           </h1>
         </Link>
         <div className="mt-2">
-          <ThemeToggle size="sm" />
+          <ThemeToggle size="xs" />
         </div>
       </div>
       <p
