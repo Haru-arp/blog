@@ -140,6 +140,29 @@ const renderRichText = (richText: RichTextItemResponse[]) => {
     const { annotations, plain_text, href } = text;
     let element: React.ReactNode = plain_text;
 
+    // 멘션 처리
+    if (text.type === "mention" && "mention" in text) {
+      const mention = text.mention;
+      if (mention.type === "link_mention") {
+        // 링크 멘션의 URL은 href에서 가져옴
+        const mentionUrl = href || plain_text;
+        element = (
+          <a
+            href={mentionUrl}
+            className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-sm hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors break-all"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className="text-blue-500">🔗</span>
+            <span className="truncate max-w-[200px] sm:max-w-[300px]">
+              {plain_text}
+            </span>
+          </a>
+        );
+        return <span key={index}>{element}</span>;
+      }
+    }
+
     // 기본 스타일 적용
     if (annotations.bold) element = <strong>{element}</strong>;
     if (annotations.italic) element = <em>{element}</em>;
@@ -156,7 +179,7 @@ const renderRichText = (richText: RichTextItemResponse[]) => {
       element = (
         <a
           href={href}
-          className="text-primary hover:text-primary/80 underline underline-offset-2"
+          className="text-primary hover:text-primary/80 underline underline-offset-2 break-all"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -789,7 +812,7 @@ export default async function PostPage(props: PageProps) {
               )}
 
               {/* Title */}
-              <h1 className="text-[32px] xl:text-[54px] font-bold tracking-tight leading-none text-[#191918] dark:text-white">
+              <h1 className="text-[32px] xl:text-[54px] font-bold tracking-tight leading-tight text-[#191918] dark:text-white break-words hyphens-auto">
                 {title}
               </h1>
 
@@ -818,7 +841,7 @@ export default async function PostPage(props: PageProps) {
             </header>
 
             {/* Article Content */}
-            <article className="prose prose-lg prose-gray max-w-none">
+            <article className="prose prose-lg prose-gray max-w-none overflow-hidden">
               {groupedContent.map((block) => (
                 <div key={block.id}>{renderBlock(block)}</div>
               ))}

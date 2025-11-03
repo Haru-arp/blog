@@ -12,6 +12,19 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "friday.tech",
   description: "배움과 도전의 흔적을 남기는 개발자들의 공간",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Friday.Tech",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#252827" },
+  ],
 };
 
 export default function RootLayout({
