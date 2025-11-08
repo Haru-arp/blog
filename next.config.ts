@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "s3.us-west-2.amazonaws.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "media3.giphy.com",
         port: "",
         pathname: "/**",
@@ -67,14 +73,14 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ["image/webp", "image/avif"],
-    minimumCacheTTL: 86400, // 24시간 캐시
+    minimumCacheTTL: 60, // 1분으로 줄여서 만료된 URL 문제 완화
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     qualities: [75, 85, 90, 95], // Next.js 16 호환성을 위한 품질 설정
-    loader: "default",
+    unoptimized: false, // 최적화 활성화
   },
 };
 

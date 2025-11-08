@@ -17,13 +17,15 @@ import { ToggleBlock } from "@/components/toggle-block";
 import { ImageWithFallback } from "@/components/image-with-fallback";
 import { CodeBlock } from "@/components/code-block";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SmoothImage } from "@/components/smooth-image";
 import type {
   PageObjectResponse,
   BlockObjectResponse,
   RichTextItemResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 
-export const revalidate = 60;
+// Notion 이미지를 직접 로드하므로 빠른 재검증 가능
+export const revalidate = 60; // 1분 (필요시 10초로 조정 가능)
 
 export async function generateStaticParams() {
   const posts = await getPosts();
@@ -542,24 +544,57 @@ const renderBlock = (
           : imageBlock.image.external?.url;
       const caption = imageBlock.image.caption;
 
-      if (!imageUrl) return null;
+      // 이미지 정보 로깅
+      // console.log("📸 Image Block Info:", {
+      //   blockId: block.id,
+      //   type: imageBlock.image.type,
+      //   url: imageUrl,
+      //   caption: caption?.[0]?.plain_text || "No caption",
+      //   isAnimated:
+      //     imageUrl?.toLowerCase().includes(".gif") ||
+      //     imageUrl?.includes("giphy.com"),
+      // });
 
+      if (!imageUrl) {
+        console.warn("⚠️ Image URL is missing for block:", block.id);
+        return null;
+      }
+
+      // Notion 이미지는 임시 URL이므로 직접 로드
       // GIF나 애니메이션 이미지는 일반 img 태그 사용
       const isAnimated =
         imageUrl.toLowerCase().includes(".gif") ||
         imageUrl.includes("giphy.com");
 
+      // Notion 업로드 이미지인지 확인
+      const isNotionHosted =
+        imageUrl.includes("prod-files-secure.s3") ||
+        imageUrl.includes("s3.us-west-2.amazonaws.com") ||
+        imageUrl.includes("notion.so");
+
       return (
-        <div className="mb-6">
+        <div className="mb-8">
           {isAnimated ? (
-            <img
+            // GIF는 애니메이션 유지를 위해 일반 img 태그 사용
+            <div className="relative w-full overflow-hidden rounded-lg">
+              <img
+                src={imageUrl}
+                alt={caption?.[0]?.plain_text || "Image"}
+                className="w-full h-auto rounded-lg"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ) : isNotionHosted ? (
+            // Notion 이미지는 부드러운 로딩 효과와 함께 직접 로드
+            <SmoothImage
               src={imageUrl}
               alt={caption?.[0]?.plain_text || "Image"}
-              className="w-full h-auto rounded-lg"
-              loading="eager"
-              decoding="async"
+              className="rounded-lg"
+              blockId={block.id}
             />
           ) : (
+            // 외부 이미지는 Next.js 최적화 사용
             <ImageWithFallback
               src={imageUrl}
               alt={caption?.[0]?.plain_text || "Image"}
@@ -572,7 +607,7 @@ const renderBlock = (
             />
           )}
           {caption && caption.length > 0 && (
-            <p className="text-sm text-gray-500 text-center mt-2 italic">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-3 italic leading-relaxed">
               {renderRichText(caption)}
             </p>
           )}
